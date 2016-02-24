@@ -1,4 +1,4 @@
-﻿# encoding: utf-8
+# encoding: utf-8
 
 import consts
 import csv
@@ -15,23 +15,26 @@ for x in range(0, 365):
   date = start_date + datetime.timedelta(days = x)
   dates_set.add(date.strftime('%d.%m.%Y'))
 
-with open('data/all.csv', encoding='utf-8', mode='r') as tsvin, open('incorrect_coordinates.csv', 'w') as incorrect_coordinates_out, open('incorrect_coordinates_yo.csv', 'w') as incorrect_coordinates_yo_out:
-  tsvin = csv.reader(tsvin, delimiter=',')
+with open('data/input.csv', encoding='utf-8', mode='r') as input, open('data/incorrect_coordinates.csv', encoding='utf-8', newline="\n", mode='w') as incorrect_coordinates_out, open('data/incorrect_coordinates_yo.csv', encoding='utf-8', newline="\n", mode='w') as incorrect_coordinates_yo_out:
+  # open csv files
+  input = csv.reader(input, delimiter=',')
+  incorrect_coordinates_out = csv.writer(incorrect_coordinates_out, delimiter=',')
+  incorrect_coordinates_yo_out = csv.writer(incorrect_coordinates_yo_out, delimiter=',')
   
   death_mari_el = 0
   death_yoshkar_ola = 0
   injury_mari_el = 0
   injury_yoshkar_ola = 0
   
-  incorrect_coordinates = []
-  incorrect_coordinates_yo = []
+  incorrect_coordinates = 0
+  incorrect_coordinates_yo = 0
   
   invalid_time_counter = 0
   
   accidents = 0
   accidents_yo = 0
   
-  for row in tsvin:
+  for row in input:
     accidents += 1
 
     actual_dates_set.add(row[consts.DATE])
@@ -56,7 +59,8 @@ with open('data/all.csv', encoding='utf-8', mode='r') as tsvin, open('incorrect_
     
     # verify coordinates
     if longitude > consts.MARI_EL_EAST or longitude < consts.MARI_EL_WEST or latitude > consts.MARI_EL_NORTH or latitude < consts.MARI_EL_SOUTH:
-      incorrect_coordinates.append(row)
+      incorrect_coordinates_out.writerow(row)
+      incorrect_coordinates += 1
       
     if row[consts.LOCATION] == consts.YOSHKAR_OLA:
       accidents_yo += 1
@@ -69,7 +73,8 @@ with open('data/all.csv', encoding='utf-8', mode='r') as tsvin, open('incorrect_
       
       # verify coordinates for capital only
       if longitude > consts.YOSHKAR_OLA_EAST or longitude < consts.YOSHKAR_OLA_WEST or latitude > consts.YOSHKAR_OLA_NORTH or latitude < consts.YOSHKAR_OLA_SOUTH:
-        incorrect_coordinates_yo.append(row)
+        incorrect_coordinates_yo_out.writerow(row)
+        incorrect_coordinates_yo += 1
 
   # summary
   print('Погибло в ДТП по республике в целом:', death_mari_el)
@@ -77,14 +82,8 @@ with open('data/all.csv', encoding='utf-8', mode='r') as tsvin, open('incorrect_
   print('Погибло в ДТП по г. Йошкар-Ола:', death_yoshkar_ola)
   print('Ранено в ДТП по г. Йошкар-Ола:', injury_yoshkar_ola, '\n')
   
-  print('Некорректных координат:', len(incorrect_coordinates))
-  print('Некорректных координат для г. Йошкар-Ола:', len(incorrect_coordinates_yo), '\n')
-  
-  for row in incorrect_coordinates:
-    incorrect_coordinates_out.write('%s\n' % ','.join(row))
-    
-  for row in incorrect_coordinates_yo:
-    incorrect_coordinates_yo_out.write('%s\n' % ','.join(row))
+  print('Некорректных координат:', incorrect_coordinates)
+  print('Некорректных координат для г. Йошкар-Ола:', incorrect_coordinates_yo, '\n')
   
   print('Количество данных с невалидными датами:', len(dates_set.symmetric_difference(actual_dates_set)))
   print('Количество данных с невалидным временем:', invalid_time_counter, '\n')

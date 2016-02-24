@@ -1,4 +1,4 @@
-﻿# encoding: utf-8
+# encoding: utf-8
 
 YOSHKAR_OLA = 'Республика Марий Эл, Йошкар-Ола'
 
