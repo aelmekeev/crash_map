@@ -9,9 +9,9 @@ from datetime import date
 
   
 def is_distance_valid(row):
-  if row[consts.LATITUDE_GEOCODE] == '':
-    return True
-
+  if row[consts.LATITUDE_GEOCODE] == '' or row[consts.LATITUDE] == '':
+    return False
+    
   lat = float(row[consts.LATITUDE])
   lng = float(row[consts.LONGITUDE])
   geo_lat = float(row[consts.LATITUDE_GEOCODE])
@@ -29,11 +29,10 @@ for x in range(0, 365):
   date = start_date + datetime.timedelta(days = x)
   dates_set.add(date.strftime('%d.%m.%Y'))
 
-with open('data/geocoding_output.csv', encoding='utf-8', mode='r') as input, open('data/incorrect_coordinates.csv', encoding='utf-8', newline="\n", mode='w') as incorrect_coordinates_out, open('data/incorrect_coordinates_yo.csv', encoding='utf-8', newline="\n", mode='w') as incorrect_coordinates_yo_out:
+with open('data/geocoding_output_yandex.csv', encoding='utf-8', mode='r') as input, open('data/coordinates_validated.csv', encoding='utf-8', newline="\n", mode='w') as output:
   # open csv files
   input = csv.reader(input, delimiter=',')
-  incorrect_coordinates_out = csv.writer(incorrect_coordinates_out, delimiter=',')
-  incorrect_coordinates_yo_out = csv.writer(incorrect_coordinates_yo_out, delimiter=',')
+  output = csv.writer(output, delimiter=',')
   
   death_mari_el = 0
   death_yoshkar_ola = 0
@@ -84,20 +83,21 @@ with open('data/geocoding_output.csv', encoding='utf-8', mode='r') as input, ope
     
     # verify coordinates
     if row[consts.LOCATION] == consts.YOSHKAR_OLA and (longitude > consts.YOSHKAR_OLA_EAST or longitude < consts.YOSHKAR_OLA_WEST or latitude > consts.YOSHKAR_OLA_NORTH or latitude < consts.YOSHKAR_OLA_SOUTH):
-      incorrect_coordinates_yo_out.writerow(row)
-      incorrect_coordinates_out.writerow(row)
       incorrect_coordinates_yo += 1
       incorrect_coordinates += 1
+      row.append(0)
     elif longitude > consts.MARI_EL_EAST or longitude < consts.MARI_EL_WEST or latitude > consts.MARI_EL_NORTH or latitude < consts.MARI_EL_SOUTH:
-      incorrect_coordinates_out.writerow(row)
       incorrect_coordinates += 1
+      row.append(0)
     else:
-      if not is_distance_valid(row):
-        incorrect_coordinates_out.writerow(row)
-        incorrect_coordinates += 1
-        if row[consts.LOCATION] == consts.YOSHKAR_OLA:
-          incorrect_coordinates_yo_out.writerow(row)
-          incorrect_coordinates_yo += 1
+      row.append(1)
+    
+    if is_distance_valid(row):
+      row.append(1)
+    else:
+      row.append(0)
+      
+    output.writerow(row);
 
       
   # summary
