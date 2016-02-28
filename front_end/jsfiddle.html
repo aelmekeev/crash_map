@@ -1,0 +1,13 @@
+<div id="floating-panel">
+  <select id="dataSelector" onchange="updateMap()">
+    <option value=-1>Выберите набор данных</option>
+    <option value=0>Йошкар-Ола. Координаты из исходных данных</option>
+    <option value=1>Йошкар-Ола. Координаты, полученные из адресов</option>
+    <option value=2>Йошкар-Ола. Валидные координаты</option>
+    <option value=3>Республика. Координаты из исходных данных</option>
+    <option value=4>Республика. Координаты, полученные из адресов</option>
+    <option value=5>Республика. Валидные координаты</option>
+  </select>
+</div>
+<div id="map"></div>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDgrd4VG32rgsrz1MG1cTufU9ZzYVrqHWo&libraries=visualization&callback=initMap"></script>
