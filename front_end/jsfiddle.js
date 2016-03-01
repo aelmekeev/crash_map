@@ -1,3 +1,25 @@
+var DATE = 0;
+var TIME = 1;
+var TYPE = 2;
+var LOCATION = 3;
+var STREET = 4;
+var HOUSE_NUMBER = 5;
+var ROAD = 6;
+var KILOMETER = 7;
+var METER = 8;
+var LONGITUDE = 9;
+var LATITUDE = 10;
+var DEATH = 11;
+var DEATH_CHILDREN = 12;
+var INJURY = 13;
+var INJURY_CHILDREN = 14;
+var LONGITUDE_GEOCODE = 15;
+var LATITUDE_GEOCODE = 16;
+var VALID = 17;
+var VALID_STRICT = 18;
+
+var YOSHKAR_OLA = 'Йошкар-Ола';
+
 var map, heatmap;
 
 function initMap() {
@@ -16,52 +38,102 @@ function initMap() {
   });
 }
 
-var heatmaps = [{
-  mapZoom: 13,
-  maxIntensity: 6,
-  pointsGetter: getAllYoPoints
-}, {
-  mapZoom: 13,
+var heatmapOptions = [{
+  mapZoom: 2,
   maxIntensity: 20,
-  pointsGetter: getAllYoGeocodedPoints
-}, {
-  mapZoom: 13,
-  maxIntensity: 3,
-  pointsGetter: getAllYoGeocodedValidPoints
+  condition: allPoints,
+  latitude: LATITUDE,
+  longitude: LONGITUDE
 }, {
   mapZoom: 8,
   maxIntensity: 10,
-  pointsGetter: getAllPoints
+  condition: republicInputData,
+  latitude: LATITUDE,
+  longitude: LONGITUDE
 }, {
   mapZoom: 8,
   maxIntensity: 20,
-  pointsGetter: getAllGeocodedPoints
+  condition: republicGeoData,
+  latitude: LATITUDE_GEOCODE,
+  longitude: LONGITUDE_GEOCODE
 }, {
   mapZoom: 8,
   maxIntensity: 3,
-  pointsGetter: getAllGeocodedValidPoints
+  condition: republicValidData,
+  latitude: LATITUDE,
+  longitude: LONGITUDE
+}, {
+  mapZoom: 13,
+  maxIntensity: 6,
+  condition: yoInputData,
+  latitude: LATITUDE,
+  longitude: LONGITUDE
+}, {
+  mapZoom: 13,
+  maxIntensity: 20,
+  condition: yoGeoData,
+  latitude: LATITUDE_GEOCODE,
+  longitude: LONGITUDE_GEOCODE
+}, {
+  mapZoom: 13,
+  maxIntensity: 3,
+  condition: yoValidData,
+  latitude: LATITUDE,
+  longitude: LONGITUDE
 }];
 
 function updateMap() {
   var elem = document.getElementById("dataSelector");
   var index = elem.options[elem.selectedIndex].value;
 
-  if (heatmaps[index] != null) {
+  var heatmapOption = heatmapOptions[index];
+
+  if (heatmapOption != null) {
     heatmap.setOptions({
-      data: generateMVCArray(heatmaps[index].pointsGetter()),
-      maxIntensity: heatmaps[index].maxIntensity
+      data: generateMVCArray(heatmapOption.condition, heatmapOption.latitude, heatmapOption.longitude),
+      maxIntensity: heatmapOption.maxIntensity
     });
 
-    map.setZoom(heatmaps[index].mapZoom);
+    map.setZoom(heatmapOption.mapZoom);
   } else {
     heatmap.setData([]);
   }
 }
 
-function generateMVCArray(coordinates) {
+function generateMVCArray(condition, latitudeIndex, longitudeIndex) {
   var mvcArray = [];
-  for (var index = 0; index < coordinates.length; ++index) {
-    mvcArray.push(new google.maps.LatLng(coordinates[index][0], coordinates[index][1]));
+  for (var index = 0; index < data.length; ++index) {
+    if (condition(data[index])) {
+      mvcArray.push(new google.maps.LatLng(data[index][latitudeIndex], data[index][longitudeIndex]));
+    }
   }
   return mvcArray;
+}
+
+function allPoints(data) {
+  return true;
+}
+
+function republicInputData(data) {
+  return data[VALID] == 1;
+}
+
+function republicGeoData(data) {
+  return data[LATITUDE_GEOCODE] != 0;
+}
+
+function republicValidData(data) {
+  return data[VALID_STRICT] == 1;
+}
+
+function yoInputData(data) {
+  return data[LOCATION] == YOSHKAR_OLA && republicInputData(data);
+}
+
+function yoGeoData(data) {
+  return data[LOCATION] == YOSHKAR_OLA && republicGeoData(data);
+}
+
+function yoValidData(data) {
+  return data[LOCATION] == YOSHKAR_OLA && republicValidData(data);
 }

@@ -1,13 +1,50 @@
 <div id="floating-panel">
   <select id="dataSelector" onchange="updateMap()">
     <option value=-1>Выберите набор данных</option>
-    <option value=0>Йошкар-Ола. Координаты из исходных данных</option>
-    <option value=1>Йошкар-Ола. Координаты, полученные из адресов</option>
-    <option value=2>Йошкар-Ола. Валидные координаты</option>
-    <option value=3>Республика. Координаты из исходных данных</option>
-    <option value=4>Республика. Координаты, полученные из адресов</option>
-    <option value=5>Республика. Валидные координаты</option>
+    <option value=0>Все координаты из исходных данных</option>
+    <option value=1>Республика. Координаты из исходных данных</option>
+    <option value=2>Республика. Координаты, полученные из адресов</option>
+    <option value=3>Республика. Валидные координаты</option>
+    <option value=4>Йошкар-Ола. Координаты из исходных данных</option>
+    <option value=5>Йошкар-Ола. Координаты, полученные из адресов</option>
+    <option value=6>Йошкар-Ола. Валидные координаты</option>
   </select>
 </div>
-<div id="map"></div>
+<div id="container">
+  <div id="filters">
+    <div id="dateFilter">
+      Start Date:
+      <input type="text" id="startDate" /> End Date:
+      <input type="text" id="endDate" />
+      <input type="button" id="resetDate" value="reset" />
+    </div>
+    <div id="timeFilter">
+      Start Time:
+      <input type="text" id="startTime" /> End Time:
+      <input type="text" id="endTime" />
+      <input type="button" id="resetTime" value="reset" />
+    </div>
+    <div id="typeFilter">
+      Types:
+      <select id="typesFilter" multiple>
+        <option value="0">Иной вид ДТП</option>
+        <option value="1">Наезд на велосипедиста</option>
+        <option value="2">Наезд на внезапно возникшее препятствие</option>
+        <option value="3">Наезд на животное</option>
+        <option value="4">Наезд на лицо, осуществляющее производство работ</option>
+        <option value="5">Наезд на пешехода</option>
+        <option value="6">Наезд на препятствие</option>
+        <option value="7">Наезд на стоящее ТС</option>
+        <option value="8">Опрокидывание</option>
+        <option value="9">Отбрасывание предмета(отсоединение колеса)</option>
+        <option value="10">Падение груза</option>
+        <option value="11">Падение пассажира</option>
+        <option value="12">Столкновение</option>
+        <option value="13">Съезд с дороги
+      </select>
+      <input type="button" id="resetType" value="reset" />
+    </div>
+  </div>
+  <div id="map"></div>
+</div>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDgrd4VG32rgsrz1MG1cTufU9ZzYVrqHWo&libraries=visualization&callback=initMap"></script>
