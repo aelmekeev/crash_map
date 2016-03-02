@@ -29,9 +29,10 @@ with open('data/geocoding_input_yandex.csv', encoding='utf-8', mode='r') as inpu
         json_response = json.loads(response.read().decode('utf-8'))['response']['GeoObjectCollection']['featureMember']
         
         for object in json_response:
-          if object['GeoObject']['metaDataProperty']['GeocoderMetaData']['kind'] == consts.HOUSE_YANDEX and object['GeoObject']['description'] == consts.YOSHKAR_OLA_YANDEX:
+          if object['GeoObject']['metaDataProperty']['GeocoderMetaData']['kind'] == consts.HOUSE_YANDEX:
             location = object['GeoObject']['Point']['pos'].split()
             row.extend([location[0], location[1]])
+            break
             
         if len(row) < consts.LONGITUDE_GEOCODE + 1:
           row.extend([0, 0])
