@@ -6,8 +6,13 @@ import math
 import time
 import datetime
 from datetime import date
+import json
+import urllib.parse
+import urllib.request
 
-  
+GEOCODING_URL_BASE = 'https://geocode-maps.yandex.ru/1.x/?format=json&geocode='
+
+
 def is_distance_valid(row):
   if row[consts.LATITUDE_GEOCODE] == '' or row[consts.LATITUDE] == '':
     return False
@@ -19,6 +24,24 @@ def is_distance_valid(row):
   distance = math.sqrt(math.pow(geo_lat - lat, 2) + math.pow(geo_lng - lng, 2))
   
   return distance < consts.MAX_RADIUS
+
+  
+def reverse_geocoding(row):
+  url = GEOCODING_URL_BASE + row[consts.LONGITUDE] + ',' + row[consts.LATITUDE]
+  
+  with urllib.request.urlopen(url) as response:
+    json_response = json.loads(response.read().decode('utf-8'))['response']['GeoObjectCollection']['featureMember']
+    
+    for object in json_response:
+      try:
+        if row[consts.LOCATION] != consts.YOSHKAR_OLA and object['GeoObject']['metaDataProperty']['GeocoderMetaData']['AddressDetails']['Country']['AdministrativeArea']['AdministrativeAreaName'] == consts.MARI_EL:
+          return True
+      except KeyError:
+        pass
+
+  print(url)
+        
+  return False
 
   
 # identify full list of dates for 2015 for accidents dates validation
@@ -90,7 +113,14 @@ with open('data/geocoding_output_yandex.csv', encoding='utf-8', mode='r') as inp
       incorrect_coordinates += 1
       row.append(0)
     else:
-      row.append(1)
+      if row[consts.LOCATION] != consts.YOSHKAR_OLA:
+        if reverse_geocoding(row):
+          row.append(1)
+        else:
+          incorrect_coordinates += 1
+          row.append(0)
+      else:
+        row.append(1)        
     
     if is_distance_valid(row):
       row.append(1)

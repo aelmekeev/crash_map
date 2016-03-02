@@ -16,7 +16,7 @@ with open('data/coordinates_validated.csv', encoding='utf-8', mode='r') as input
     row_typed.append(row[consts.DATE])
     row_typed.append(row[consts.TIME])
     row_typed.append(row[consts.TYPE])
-    row_typed.append(row[consts.LOCATION].replace('Республика Марий Эл, ', ''))
+    row_typed.append(row[consts.LOCATION].replace(consts.MARI_EL + ', ', ''))
     row_typed.append(row[consts.STREET])
     row_typed.append(row[consts.HOUSE_NUMBER])
     row_typed.append(row[consts.ROAD])
