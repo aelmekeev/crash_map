@@ -3,6 +3,7 @@
 # input data constants
 
 YOSHKAR_OLA = 'Республика Марий Эл, Йошкар-Ола'
+MARI_EL = 'Республика Марий Эл'
 
 # data indices
 DATE = 0
@@ -32,6 +33,7 @@ STREET_REPLACE_DICTIONARY = {
   'Л.Шевцовой': 'Шевцовой',
   'Панфилова пер': 'Панфилова улица',
   'Комсомольская пл': 'Комсомольская ул',
+  'Маркса пер': 'Маркса ул'
 }
 
 # coordinates grid borders
@@ -50,6 +52,4 @@ MAX_RADIUS = 0.0017
 
 # Yandex API constants
 
-YOSHKAR_OLA_YANDEX = 'Йошкар-Ола, Республика Марий Эл, Россия'
 HOUSE_YANDEX = 'house'
-

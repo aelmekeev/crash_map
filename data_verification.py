@@ -6,8 +6,13 @@ import math
 import time
 import datetime
 from datetime import date
+import json
+import urllib.parse
+import urllib.request
 
-  
+GEOCODING_URL_BASE = 'https://geocode-maps.yandex.ru/1.x/?format=json&geocode='
+
+
 def is_distance_valid(row):
   if row[consts.LATITUDE_GEOCODE] == '' or row[consts.LATITUDE] == '':
     return False
@@ -21,6 +26,24 @@ def is_distance_valid(row):
   return distance < consts.MAX_RADIUS
 
   
+def reverse_geocoding(row):
+  url = GEOCODING_URL_BASE + row[consts.LONGITUDE] + ',' + row[consts.LATITUDE]
+  
+  with urllib.request.urlopen(url) as response:
+    json_response = json.loads(response.read().decode('utf-8'))['response']['GeoObjectCollection']['featureMember']
+    
+    for object in json_response:
+      try:
+        if row[consts.LOCATION] != consts.YOSHKAR_OLA and object['GeoObject']['metaDataProperty']['GeocoderMetaData']['AddressDetails']['Country']['AdministrativeArea']['AdministrativeAreaName'] == consts.MARI_EL:
+          return True
+      except KeyError:
+        pass
+
+  print(url)
+        
+  return False
+
+  
 # identify full list of dates for 2015 for accidents dates validation
 dates_set = set()
 actual_dates_set = set()
@@ -29,7 +52,7 @@ for x in range(0, 365):
   date = start_date + datetime.timedelta(days = x)
   dates_set.add(date.strftime('%d.%m.%Y'))
 
-with open('data/geocoding_output_yandex.csv', encoding='utf-8', mode='r') as input, open('data/coordinates_validated.csv', encoding='utf-8', newline="\n", mode='w') as output:
+with open('data/input_geocoded.csv', encoding='utf-8', mode='r') as input, open('data/input_validated.csv', encoding='utf-8', newline="\n", mode='w') as output:
   # open csv files
   input = csv.reader(input, delimiter=',')
   output = csv.writer(output, delimiter=',')
@@ -90,7 +113,14 @@ with open('data/geocoding_output_yandex.csv', encoding='utf-8', mode='r') as inp
       incorrect_coordinates += 1
       row.append(0)
     else:
-      row.append(1)
+      if row[consts.LOCATION] != consts.YOSHKAR_OLA:
+        if reverse_geocoding(row):
+          row.append(1)
+        else:
+          incorrect_coordinates += 1
+          row.append(0)
+      else:
+        row.append(1)        
     
     if is_distance_valid(row):
       row.append(1)
