@@ -83,10 +83,7 @@ var heatmapOptions = [{
 }];
 
 function updateMap() {
-  var elem = document.getElementById("dataSelector");
-  var index = elem.options[elem.selectedIndex].value;
-
-  var heatmapOption = heatmapOptions[index];
+  var heatmapOption = heatmapOptions[$('select#dataSelector').val()];
 
   if (heatmapOption != null) {
     heatmap.setOptions({
@@ -100,14 +97,76 @@ function updateMap() {
   }
 }
 
-function generateMVCArray(condition, latitudeIndex, longitudeIndex) {
+function generateMVCArray(datasetCondition, latitudeIndex, longitudeIndex) {
+  var typeFilterValue = $('select#typesFilter :selected').text();
+  var dateFilterValue = getDateFilterValue();
+  var timeFilterValue = getTimeFilterValue();
+
   var mvcArray = [];
   for (var index = 0; index < data.length; ++index) {
-    if (condition(data[index])) {
+    if (datasetCondition(data[index]) && filter(data[index], typeFilterValue, dateFilterValue, timeFilterValue)) {
       mvcArray.push(new google.maps.LatLng(data[index][latitudeIndex], data[index][longitudeIndex]));
     }
   }
   return mvcArray;
+}
+
+function getDateFilterValue() {
+  var dateFilterValue = {};
+
+  dateFilterValue.startDate = $('#startDate').datepicker('getDate');
+  dateFilterValue.endDate = $('#endDate').datepicker('getDate');
+  dateFilterValue.invert = $('#invertDateRange').prop('checked');
+
+  return dateFilterValue;
+}
+
+function getTimeFilterValue() {
+  var timeFilterValue = [];
+
+  timeFilterValue.startTime = $('#startTime').timepicker('getTime');
+  timeFilterValue.endTime = $('#endTime').timepicker('getTime');
+  timeFilterValue.invert = $('#invertTimeRange').prop('checked');
+
+  return timeFilterValue;
+}
+
+function filter(data, typeFilterValue, dateFilterValue, timeFilterValue) {
+  var dateFilter = filterDate(data, dateFilterValue);
+  var timeFilter = filterTime(data, timeFilterValue);
+  var typeFilter = typeFilterValue == '' || typeFilterValue.indexOf(data[TYPE]) != -1;
+
+  return dateFilter && timeFilter && typeFilter;
+}
+
+function filterDate(data, dateFilterValue) {
+  var date = parseDate(data[DATE]);
+
+  var dateFilter = dateFilterValue.invert && dateFilterValue.startDate == null && dateFilterValue.endDate == null;
+  dateFilter = dateFilter || !dateFilterValue.invert && (dateFilterValue.startDate == null || dateFilterValue.startDate < date) && (dateFilterValue.endDate == null || dateFilterValue.endDate > date);
+  dateFilter = dateFilter || dateFilterValue.invert && (dateFilterValue.startDate != null && dateFilterValue.startDate > date || dateFilterValue.endDate != null && dateFilterValue.endDate < date);
+
+  return dateFilter;
+}
+
+function filterTime(data, timeFilterValue) {
+  var time = parseTime(data[TIME]);
+
+  var timeFilter = timeFilterValue.invert && timeFilterValue.startTime == null && timeFilterValue.endTime == null;
+  timeFilter = timeFilter || !timeFilterValue.invert && (timeFilterValue.startTime == null || timeFilterValue.startTime < time) && (timeFilterValue.endTime == null || timeFilterValue.endTime > time);
+  timeFilter = timeFilter || timeFilterValue.invert && (timeFilterValue.startTime != null && timeFilterValue.startTime > time || timeFilterValue.endTime != null && timeFilterValue.endTime < time);
+
+  return timeFilter
+}
+
+function parseDate(dateString) {
+  var parts = dateString.split('.');
+  return new Date(+parts[2], +parts[1] - 1, +parts[0]);
+}
+
+function parseTime(timeString) {
+  var parts = timeString.split(':');
+  return new Date(1970, 1 - 1, 1, +parts[0], +parts[1]);
 }
 
 function allPoints(data) {
@@ -137,3 +196,76 @@ function yoGeoData(data) {
 function yoValidData(data) {
   return data[LOCATION] == YOSHKAR_OLA && republicValidData(data);
 }
+
+function resetType() {
+  $('select#typesFilter :selected').removeAttr('selected');
+  updateMap();
+}
+
+function resetDate() {
+  $('#startDate').val('');
+  $('#startDate').datepicker('option', {
+    minDate: new Date(2015, 1 - 1, 1),
+    maxDate: new Date(2015, 12 - 1, 31)
+  });
+  $('#endDate').val('');
+  $('#endDate').datepicker('option', {
+    minDate: new Date(2015, 1 - 1, 1),
+    maxDate: new Date(2015, 12 - 1, 31)
+  });
+  updateMap();
+}
+
+function resetTime() {
+  $('#startTime').val('');
+  $('#startTime').timepicker('option', {
+    minTime: "0:00",
+    maxTime: "24:00"
+  });
+  $('#endTime').val('');
+  $('#endTime').timepicker('option', {
+    minTime: "0:00",
+    maxTime: "24:00"
+  });
+  updateMap();
+}
+
+$(function() {
+  $('#startDate').datepicker({
+    minDate: new Date(2015, 1 - 1, 1),
+    maxDate: new Date(2015, 12 - 1, 31),
+    dateFormat: 'd/m/y',
+    onClose: function(selectedDate) {
+      $('#endDate').datepicker('option', 'minDate', selectedDate);
+    }
+  });
+
+  $('#endDate').datepicker({
+    minDate: new Date(2015, 1 - 1, 1),
+    maxDate: new Date(2015, 12 - 1, 31),
+    dateFormat: 'd/m/y',
+    onClose: function(selectedDate) {
+      $('#startDate').datepicker('option', 'maxDate', selectedDate);
+    }
+  });
+
+  $('#startTime').timepicker({
+    timeFormat: 'H:i',
+    show2400: true,
+    minTime: "0:00",
+    maxTime: "24:00"
+  });
+  $('#startTime').on('changeTime', function() {
+    $('#endTime').timepicker('option', 'minTime', $(this).val());
+  });
+
+  $('#endTime').timepicker({
+    timeFormat: 'H:i',
+    show2400: true,
+    minTime: "0:00",
+    maxTime: "24:00"
+  });
+  $('#endTime').on('changeTime', function() {
+    $('#startTime').timepicker('option', 'maxTime', $(this).val());
+  });
+});

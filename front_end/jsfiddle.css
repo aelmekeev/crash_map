@@ -30,3 +30,16 @@ body {
   text-align: center;
   font-family: 'Roboto', 'sans-serif';
 }
+
+#resetDate,
+#resetTime,
+#resetType {
+  margin-left: 20px;
+}
+
+#startDate,
+#endDate,
+#startTime,
+#endTime {
+  width: 80px;
+}
