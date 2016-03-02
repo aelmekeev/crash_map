@@ -20,62 +20,66 @@ var VALID_STRICT = 18;
 
 var YOSHKAR_OLA = 'Йошкар-Ола';
 
-var map, heatmap;
+var map, heatmap, markerCluster, infowindow;
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 13,
+    zoom: 8,
+    disableDoubleClickZoom: true,
     center: {
       lat: 56.632057,
       lng: 47.882995
     },
-    mapTypeId: google.maps.MapTypeId.MAP
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  });
+
+  google.maps.event.addListener(map, 'zoom_changed', function() {
+    infowindow.close();
   });
 
   heatmap = new google.maps.visualization.HeatmapLayer({
     map: map,
     maxIntensity: 5
   });
+
+  markerCluster = new MarkerClusterer(map, [], {
+    zoomOnClick: true
+  });
+
+  infowindow = new google.maps.InfoWindow();
 }
 
-var heatmapOptions = [{
-  mapZoom: 2,
+var layerOptions = [{
   maxIntensity: 20,
   condition: allPoints,
   latitude: LATITUDE,
   longitude: LONGITUDE
 }, {
-  mapZoom: 8,
   maxIntensity: 10,
   condition: republicInputData,
   latitude: LATITUDE,
   longitude: LONGITUDE
 }, {
-  mapZoom: 8,
   maxIntensity: 20,
   condition: republicGeoData,
   latitude: LATITUDE_GEOCODE,
   longitude: LONGITUDE_GEOCODE
 }, {
-  mapZoom: 8,
   maxIntensity: 3,
   condition: republicValidData,
   latitude: LATITUDE,
   longitude: LONGITUDE
 }, {
-  mapZoom: 13,
   maxIntensity: 6,
   condition: yoInputData,
   latitude: LATITUDE,
   longitude: LONGITUDE
 }, {
-  mapZoom: 13,
   maxIntensity: 20,
   condition: yoGeoData,
   latitude: LATITUDE_GEOCODE,
   longitude: LONGITUDE_GEOCODE
 }, {
-  mapZoom: 13,
   maxIntensity: 3,
   condition: yoValidData,
   latitude: LATITUDE,
@@ -83,32 +87,103 @@ var heatmapOptions = [{
 }];
 
 function updateMap() {
-  var heatmapOption = heatmapOptions[$('select#dataSelector').val()];
+  var layerOption = layerOptions[$('select#dataSelector').val()];
 
+  if ($('input[name=layer]:checked').val() == 'heatmap') {
+    markerCluster.clearMarkers();
+    updateHeatmap(layerOption);
+  } else {
+    heatmap.setData([]);
+    drawMarkers(layerOption);
+  }
+}
+
+function updateHeatmap(heatmapOption) {
   if (heatmapOption != null) {
     heatmap.setOptions({
-      data: generateMVCArray(heatmapOption.condition, heatmapOption.latitude, heatmapOption.longitude),
+      data: generateDataArray(heatmapOption.condition, heatmapOption.latitude, heatmapOption.longitude, true),
       maxIntensity: heatmapOption.maxIntensity
     });
-
-    map.setZoom(heatmapOption.mapZoom);
   } else {
     heatmap.setData([]);
   }
 }
 
-function generateMVCArray(datasetCondition, latitudeIndex, longitudeIndex) {
+function drawMarkers(layerOption) {
+  if (layerOption != null) {
+    var markers = generateDataArray(layerOption.condition, layerOption.latitude, layerOption.longitude, false);
+    markerCluster.clearMarkers();
+    markerCluster.addMarkers(markers);
+  } else {
+    markerCluster.clearMarkers();
+  }
+}
+
+function generateDataArray(datasetCondition, latitudeIndex, longitudeIndex, isHeatmap) {
   var typeFilterValue = $('select#typesFilter :selected').text();
   var dateFilterValue = getDateFilterValue();
   var timeFilterValue = getTimeFilterValue();
 
-  var mvcArray = [];
+  var dataArray = [];
   for (var index = 0; index < data.length; ++index) {
     if (datasetCondition(data[index]) && filter(data[index], typeFilterValue, dateFilterValue, timeFilterValue)) {
-      mvcArray.push(new google.maps.LatLng(data[index][latitudeIndex], data[index][longitudeIndex]));
+      if (isHeatmap) {
+        dataArray.push(new google.maps.LatLng(data[index][latitudeIndex], data[index][longitudeIndex]));
+      } else {
+        dataArray.push(createMarker(data[index], latitudeIndex, longitudeIndex));
+      }
     }
   }
-  return mvcArray;
+  return dataArray;
+}
+
+function createMarker(data, latitudeIndex, longitudeIndex) {
+  var marker = new google.maps.Marker({
+    position: {
+      lat: data[latitudeIndex],
+      lng: data[longitudeIndex]
+    },
+    map: map
+  });
+
+  google.maps.event.addListener(marker, 'click', function(e) {
+    infowindow.setContent(createInfoWindowContent(data));
+    infowindow.open(map, this);
+  });
+
+  return marker;
+}
+
+function createInfoWindowContent(data) {
+  var content = '<div class="info"><b>Дата и время</b>: ' + data[DATE] + ' ' + data[TIME] + '<br />';
+  content += '<b>Тип</b>: ' + data[TYPE] + '<br />';
+
+  var place = data[LOCATION] + ', ';
+  if (data[STREET] != '') {
+    place += data[STREET] + ', д. ' + data[HOUSE_NUMBER];
+  } else {
+    place += data[ROAD] + ' ' + data[KILOMETER] + '-й км. ' + data[METER] + '-й м.';
+  }
+
+  content += '<b>Место</b>: ' + place + '<br />';
+
+  if (data[DEATH] != 0) {
+    content += '<b>Погибло</b>: ' + data[DEATH];
+    if (data[DEATH_CHILDREN] != 0) {
+      content += ' (среди них детей: ' + data[DEATH_CHILDREN] + ')';
+    }
+    content += '<br />';
+  }
+
+  if (data[INJURY] != 0) {
+    content += '<b>Пострадало</b>: ' + data[INJURY];
+    if (data[INJURY_CHILDREN] != 0) {
+      content += ' (среди них детей: ' + data[INJURY_CHILDREN] + ')';
+    }
+    content += '<br />';
+  }
+
+  return content + '</div>';
 }
 
 function getDateFilterValue() {
@@ -213,6 +288,7 @@ function resetDate() {
     minDate: new Date(2015, 1 - 1, 1),
     maxDate: new Date(2015, 12 - 1, 31)
   });
+  $('#invertDateRange').removeAttr('checked');
   updateMap();
 }
 
@@ -227,6 +303,7 @@ function resetTime() {
     minTime: "0:00",
     maxTime: "24:00"
   });
+  $('#invertTimeRange').removeAttr('checked');
   updateMap();
 }
 

@@ -17,12 +17,19 @@
       <input type="text" id="endDate" onchange="updateMap()" />
       <input type="checkbox" id="invertDateRange" onchange="updateMap()" /> Инвертировать
       <input type="button" id="resetDate" value="Сбросить" onclick="resetDate()" />
+      <div id="layerTypeLabel">
+        Выберите тип карты:
+      </div>
     </div>
     <div id="timeFilter">
       <input type="text" id="startTime" onchange="updateMap()" /> &mdash;
       <input type="text" id="endTime" onchange="updateMap()" />
       <input type="checkbox" id="invertTimeRange" onchange="updateMap()" /> Инвертировать
       <input type="button" id="resetTime" value="Сбросить" onclick="resetTime()" />
+      <div id="layerType">
+        <input type="radio" name="layer" value="markers" checked="checked" onchange="updateMap()"> метки
+        <input type="radio" name="layer" value="heatmap" onchange="updateMap()"> тепловая карта
+      </div>
     </div>
     <div id="typeFilter">
       <select id="typesFilter" multiple onchange="updateMap()">
