@@ -52,7 +52,7 @@ for x in range(0, 365):
   date = start_date + datetime.timedelta(days = x)
   dates_set.add(date.strftime('%d.%m.%Y'))
 
-with open('data/geocoding_output_yandex.csv', encoding='utf-8', mode='r') as input, open('data/coordinates_validated.csv', encoding='utf-8', newline="\n", mode='w') as output:
+with open('data/input_geocoded.csv', encoding='utf-8', mode='r') as input, open('data/input_validated.csv', encoding='utf-8', newline="\n", mode='w') as output:
   # open csv files
   input = csv.reader(input, delimiter=',')
   output = csv.writer(output, delimiter=',')
