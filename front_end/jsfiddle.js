@@ -1,3 +1,15 @@
+// TODO:
+// - Check swap coordinates scenario in python
+// - Double check that everythin is working end-to-end
+// - Documentation
+// - Alpha-testing
+//   - testing in other browsers
+// - Adblock
+// - Beta-testing
+//   - call GIBDD
+// - Release
+
+// indeces for input data array
 var DATE = 0;
 var TIME = 1;
 var TYPE = 2;
@@ -22,11 +34,13 @@ var YOSHKAR_OLA = 'Йошкар-Ола';
 
 var map, heatmap, markerCluster, infowindow;
 
+// map and its' objects initialization
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
     zoom: 8,
     disableDoubleClickZoom: true,
     center: {
+    	// Yoshkar-Ola
       lat: 56.632057,
       lng: 47.882995
     },
@@ -38,8 +52,7 @@ function initMap() {
   });
 
   heatmap = new google.maps.visualization.HeatmapLayer({
-    map: map,
-    maxIntensity: 5
+    map: map
   });
 
   markerCluster = new MarkerClusterer(map, [], {
@@ -123,10 +136,11 @@ function generateDataArray(datasetCondition, latitudeIndex, longitudeIndex, isHe
   var typeFilterValue = $('select#typesFilter :selected').text();
   var dateFilterValue = getDateFilterValue();
   var timeFilterValue = getTimeFilterValue();
+  var injuryFilterValue = $('select#injuryFilter').val();
 
   var dataArray = [];
   for (var index = 0; index < data.length; ++index) {
-    if (datasetCondition(data[index]) && filter(data[index], typeFilterValue, dateFilterValue, timeFilterValue)) {
+    if (datasetCondition(data[index]) && filter(data[index], typeFilterValue, dateFilterValue, timeFilterValue, injuryFilterValue)) {
       if (isHeatmap) {
         dataArray.push(new google.maps.LatLng(data[index][latitudeIndex], data[index][longitudeIndex]));
       } else {
@@ -206,12 +220,28 @@ function getTimeFilterValue() {
   return timeFilterValue;
 }
 
-function filter(data, typeFilterValue, dateFilterValue, timeFilterValue) {
+function filter(data, typeFilterValue, dateFilterValue, timeFilterValue, injuryFilterValue) {
   var dateFilter = filterDate(data, dateFilterValue);
   var timeFilter = filterTime(data, timeFilterValue);
   var typeFilter = typeFilterValue == '' || typeFilterValue.indexOf(data[TYPE]) != -1;
+  var injuryFilter = filterInjury(data, injuryFilterValue);
 
-  return dateFilter && timeFilter && typeFilter;
+  return dateFilter && timeFilter && typeFilter && injuryFilter;
+}
+
+function filterInjury(data, injuryFilterValue) {
+  switch (+injuryFilterValue) {
+    case -1:
+      return true;
+    case 0:
+      return data[INJURY] > 0;
+    case 1:
+      return data[INJURY_CHILDREN] > 0;
+    case 2:
+      return data[DEATH] > 0;
+    case 3:
+      return data[DEATH_CHILDREN] > 0;
+  }
 }
 
 function filterDate(data, dateFilterValue) {
