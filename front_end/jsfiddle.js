@@ -1,6 +1,5 @@
 // TODO:
-// - Check swap coordinates scenario in python
-// - Double check that everythin is working end-to-end
+// - Double check that everything is working end-to-end
 // - Documentation
 // - Alpha-testing
 //   - testing in other browsers
@@ -40,12 +39,14 @@ function initMap() {
     zoom: 8,
     disableDoubleClickZoom: true,
     center: {
-    	// Yoshkar-Ola
+      // Yoshkar-Ola
       lat: 56.632057,
       lng: 47.882995
     },
     mapTypeId: google.maps.MapTypeId.ROADMAP
   });
+
+  infowindow = new google.maps.InfoWindow();
 
   google.maps.event.addListener(map, 'zoom_changed', function() {
     infowindow.close();
@@ -58,10 +59,9 @@ function initMap() {
   markerCluster = new MarkerClusterer(map, [], {
     zoomOnClick: true
   });
-
-  infowindow = new google.maps.InfoWindow();
 }
 
+// options for layers with different types of data
 var layerOptions = [{
   maxIntensity: 20,
   condition: allPoints,
@@ -99,6 +99,41 @@ var layerOptions = [{
   longitude: LONGITUDE
 }];
 
+// data type conditions
+
+function allPoints(data) {
+  return true;
+}
+
+function republicInputData(data) {
+  return data[VALID] == 1;
+}
+
+function republicGeoData(data) {
+  return data[LATITUDE_GEOCODE] != 0;
+}
+
+function republicValidData(data) {
+  return data[VALID_STRICT] == 1;
+}
+
+function yoInputData(data) {
+  return data[LOCATION] == YOSHKAR_OLA && republicInputData(data);
+}
+
+function yoGeoData(data) {
+  return data[LOCATION] == YOSHKAR_OLA && republicGeoData(data);
+}
+
+function yoValidData(data) {
+  return data[LOCATION] == YOSHKAR_OLA && republicValidData(data);
+}
+
+function resetType() {
+  $('select#typesFilter :selected').removeAttr('selected');
+  updateMap();
+}
+
 function updateMap() {
   var layerOption = layerOptions[$('select#dataSelector').val()];
 
@@ -122,16 +157,6 @@ function updateHeatmap(heatmapOption) {
   }
 }
 
-function drawMarkers(layerOption) {
-  if (layerOption != null) {
-    var markers = generateDataArray(layerOption.condition, layerOption.latitude, layerOption.longitude, false);
-    markerCluster.clearMarkers();
-    markerCluster.addMarkers(markers);
-  } else {
-    markerCluster.clearMarkers();
-  }
-}
-
 function generateDataArray(datasetCondition, latitudeIndex, longitudeIndex, isHeatmap) {
   var typeFilterValue = $('select#typesFilter :selected').text();
   var dateFilterValue = getDateFilterValue();
@@ -149,6 +174,38 @@ function generateDataArray(datasetCondition, latitudeIndex, longitudeIndex, isHe
     }
   }
   return dataArray;
+}
+
+function getDateFilterValue() {
+  var dateFilterValue = {};
+
+  dateFilterValue.startDate = $('#startDate').datepicker('getDate');
+  dateFilterValue.endDate = $('#endDate').datepicker('getDate');
+  dateFilterValue.invert = $('#invertDateRange').prop('checked');
+
+  return dateFilterValue;
+}
+
+function getTimeFilterValue() {
+  var timeFilterValue = [];
+
+  timeFilterValue.startTime = $('#startTime').timepicker('getTime');
+  timeFilterValue.endTime = $('#endTime').timepicker('getTime');
+  timeFilterValue.invert = $('#invertTimeRange').prop('checked');
+
+  return timeFilterValue;
+}
+
+// markers clustering
+
+function drawMarkers(layerOption) {
+  if (layerOption != null) {
+    var markers = generateDataArray(layerOption.condition, layerOption.latitude, layerOption.longitude, false);
+    markerCluster.clearMarkers();
+    markerCluster.addMarkers(markers);
+  } else {
+    markerCluster.clearMarkers();
+  }
 }
 
 function createMarker(data, latitudeIndex, longitudeIndex) {
@@ -200,25 +257,7 @@ function createInfoWindowContent(data) {
   return content + '</div>';
 }
 
-function getDateFilterValue() {
-  var dateFilterValue = {};
-
-  dateFilterValue.startDate = $('#startDate').datepicker('getDate');
-  dateFilterValue.endDate = $('#endDate').datepicker('getDate');
-  dateFilterValue.invert = $('#invertDateRange').prop('checked');
-
-  return dateFilterValue;
-}
-
-function getTimeFilterValue() {
-  var timeFilterValue = [];
-
-  timeFilterValue.startTime = $('#startTime').timepicker('getTime');
-  timeFilterValue.endTime = $('#endTime').timepicker('getTime');
-  timeFilterValue.invert = $('#invertTimeRange').prop('checked');
-
-  return timeFilterValue;
-}
+// filtering
 
 function filter(data, typeFilterValue, dateFilterValue, timeFilterValue, injuryFilterValue) {
   var dateFilter = filterDate(data, dateFilterValue);
@@ -247,9 +286,7 @@ function filterInjury(data, injuryFilterValue) {
 function filterDate(data, dateFilterValue) {
   var date = parseDate(data[DATE]);
 
-  var dateFilter = dateFilterValue.invert && dateFilterValue.startDate == null && dateFilterValue.endDate == null;
-  dateFilter = dateFilter || !dateFilterValue.invert && (dateFilterValue.startDate == null || dateFilterValue.startDate < date) && (dateFilterValue.endDate == null || dateFilterValue.endDate > date);
-  dateFilter = dateFilter || dateFilterValue.invert && (dateFilterValue.startDate != null && dateFilterValue.startDate > date || dateFilterValue.endDate != null && dateFilterValue.endDate < date);
+  var dateFilter = dateFilterValue.startDate == null && dateFilterValue.endDate == null || !dateFilterValue.invert && (dateFilterValue.startDate == null || dateFilterValue.startDate < date) && (dateFilterValue.endDate == null || dateFilterValue.endDate > date) || dateFilterValue.invert && (dateFilterValue.startDate != null && dateFilterValue.startDate > date || dateFilterValue.endDate != null && dateFilterValue.endDate < date);
 
   return dateFilter;
 }
@@ -257,9 +294,7 @@ function filterDate(data, dateFilterValue) {
 function filterTime(data, timeFilterValue) {
   var time = parseTime(data[TIME]);
 
-  var timeFilter = timeFilterValue.invert && timeFilterValue.startTime == null && timeFilterValue.endTime == null;
-  timeFilter = timeFilter || !timeFilterValue.invert && (timeFilterValue.startTime == null || timeFilterValue.startTime < time) && (timeFilterValue.endTime == null || timeFilterValue.endTime > time);
-  timeFilter = timeFilter || timeFilterValue.invert && (timeFilterValue.startTime != null && timeFilterValue.startTime > time || timeFilterValue.endTime != null && timeFilterValue.endTime < time);
+  var timeFilter = timeFilterValue.startTime == null && timeFilterValue.endTime == null || !timeFilterValue.invert && (timeFilterValue.startTime == null || timeFilterValue.startTime < time) && (timeFilterValue.endTime == null || timeFilterValue.endTime > time) || timeFilterValue.invert && (timeFilterValue.startTime != null && timeFilterValue.startTime > time || timeFilterValue.endTime != null && timeFilterValue.endTime < time);
 
   return timeFilter
 }
@@ -272,39 +307,6 @@ function parseDate(dateString) {
 function parseTime(timeString) {
   var parts = timeString.split(':');
   return new Date(1970, 1 - 1, 1, +parts[0], +parts[1]);
-}
-
-function allPoints(data) {
-  return true;
-}
-
-function republicInputData(data) {
-  return data[VALID] == 1;
-}
-
-function republicGeoData(data) {
-  return data[LATITUDE_GEOCODE] != 0;
-}
-
-function republicValidData(data) {
-  return data[VALID_STRICT] == 1;
-}
-
-function yoInputData(data) {
-  return data[LOCATION] == YOSHKAR_OLA && republicInputData(data);
-}
-
-function yoGeoData(data) {
-  return data[LOCATION] == YOSHKAR_OLA && republicGeoData(data);
-}
-
-function yoValidData(data) {
-  return data[LOCATION] == YOSHKAR_OLA && republicValidData(data);
-}
-
-function resetType() {
-  $('select#typesFilter :selected').removeAttr('selected');
-  updateMap();
 }
 
 function resetDate() {
@@ -337,6 +339,7 @@ function resetTime() {
   updateMap();
 }
 
+// filters widgets initialization
 $(function() {
   $('#startDate').datepicker({
     minDate: new Date(2015, 1 - 1, 1),

@@ -2,8 +2,25 @@
 
 # input data constants
 
-YOSHKAR_OLA = 'Республика Марий Эл, Йошкар-Ола'
 MARI_EL = 'Республика Марий Эл'
+YOSHKAR_OLA = 'Республика Марий Эл, Йошкар-Ола'
+VOLZHSK = 'Республика Марий Эл, Волжск'
+VOLZHSK_ADM = 'Республика Марий Эл, Волжский район'
+MOUNTIN = 'Республика Марий Эл, Горномарийский район'
+ZVENIGOVO = 'Республика Марий Эл, Звениговский район'
+KILEMARY = 'Республика Марий Эл, Килемарский район'
+KUZHENER = 'Республика Марий Эл, Куженерский район'
+TUREK = 'Республика Марий Эл, Мари-Турекский район'
+MEDVEDEVO = 'Республика Марий Эл, Медведевский район'
+MORKI = 'Республика Марий Эл, Моркинский район'
+NEW_TORYAL = 'Республика Марий Эл, Новоторъяльский район'
+ORSHANKA = 'Республика Марий Эл, Оршанский район'
+PARANGA = 'Республика Марий Эл, Параньгинский район'
+SERNUR = 'Республика Марий Эл, Сернурский район'
+SOVETSKIY = 'Республика Марий Эл, Советский район'
+YURINO = 'Республика Марий Эл, Юринский район'
+
+ADMINISTRATIVE = [YOSHKAR_OLA, VOLZHSK, VOLZHSK_ADM, MOUNTIN, ZVENIGOVO, KILEMARY, KUZHENER, TUREK, MEDVEDEVO, MORKI, NEW_TORYAL, ORSHANKA, PARANGA, SERNUR, SOVETSKIY, YURINO]
 
 # data indices
 DATE = 0
@@ -48,7 +65,8 @@ YOSHKAR_OLA_EAST = 47.972560
 YOSHKAR_OLA_SOUTH = 56.603073
 YOSHKAR_OLA_NORTH = 56.669722
 
-MAX_RADIUS = 0.0017
+EARTH_MEAN_RADIUS = 6371000
+MAX_DISTANCE = 150
 
 # Yandex API constants
 
