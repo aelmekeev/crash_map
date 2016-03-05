@@ -5,7 +5,7 @@ import csv
 import json
 
   
-with open('data/input_validated.csv', encoding='utf-8', mode='r') as input, open('data/data.js', encoding='utf-8', mode='w') as output:
+with open('../data/input_validated.csv', encoding='utf-8', mode='r') as input, open('../data/data.js', encoding='utf-8', mode='w') as output:
   # open csv files
   csv_input = csv.reader(input, delimiter=',')
   

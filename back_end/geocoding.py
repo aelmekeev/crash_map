@@ -33,7 +33,7 @@ def make_request(input, url):
       row.extend([0, 0])
 
 
-with open('data/input.csv', encoding='utf-8', mode='r') as input, open('data/input_geocoded.csv', encoding='utf-8', newline="\n", mode='w') as geocoding_output:
+with open('../data/input.csv', encoding='utf-8', mode='r') as input, open('../data/input_geocoded.csv', encoding='utf-8', newline="\n", mode='w') as geocoding_output:
   # open csv files
   input = csv.reader(input, delimiter=',')
   output = csv.writer(geocoding_output, delimiter=',')
