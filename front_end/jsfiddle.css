@@ -3,38 +3,36 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  background-color: #FFF;
+  overflow: hidden;
 }
 
-#container {
-  height: 100%;
+body,
+input,
+select,
+option {
+  font-family: Arial;
+  font-size: 10pt;
 }
 
-#filters {
+.column {
+  float: left;
   margin: 10px;
+  height: 170px;
 }
 
-#dateFilter,
-#timeFilter {
+.filter,
+input[type='button'] {
   margin-bottom: 10px;
 }
 
+input[type='button'] {
+  display: block;
+}
+
 #map {
-  height: 100%;
-}
-
-#floating-panel {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  z-index: 5;
-  text-align: center;
-  font-family: 'Roboto', 'sans-serif';
-}
-
-#resetDate,
-#resetTime,
-#resetType {
-  margin-left: 20px;
+  height: 500px;
+  clear: both;
 }
 
 #startDate,
@@ -42,4 +40,8 @@ body {
 #startTime,
 #endTime {
   width: 80px;
+}
+
+.info {
+  width: 250px;
 }

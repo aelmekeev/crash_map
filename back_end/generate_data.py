@@ -5,7 +5,7 @@ import csv
 import json
 
   
-with open('data/input_validated.csv', encoding='utf-8', mode='r') as input, open('data/data.js', encoding='utf-8', mode='w') as output:
+with open('../data/input_validated.csv', encoding='utf-8', mode='r') as input, open('../data/data.js', encoding='utf-8', mode='w') as output:
   # open csv files
   csv_input = csv.reader(input, delimiter=',')
   
@@ -46,6 +46,6 @@ with open('data/input_validated.csv', encoding='utf-8', mode='r') as input, open
     row_typed.append(int(row[consts.VALID_STRICT]))
     json_output.append(row_typed)
     
-  output.write('data=')
+  output.write('var data=')
   output.write(json.dumps(json_output, ensure_ascii=False))
   output.write(';')
