@@ -1,5 +1,4 @@
 // TODO:
-// - Documentation
 // - Alpha-testing
 //   - testing in other browsers
 // - Beta-testing
@@ -225,6 +224,7 @@ function createInfoWindowContent(data) {
   }
 
   content += '<b>Место</b>: ' + place + '<br />';
+  content += '<b>Координаты</b>: ' + data[LATITUDE] + ', ' + data[LONGITUDE] + '<br />';
 
   if (data[DEATH] != 0) {
     content += '<b>Погибло</b>: ' + data[DEATH];
