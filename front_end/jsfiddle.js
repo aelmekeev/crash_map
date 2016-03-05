@@ -1,9 +1,6 @@
 // TODO:
-// - Double check that everything is working end-to-end
-// - Documentation
 // - Alpha-testing
 //   - testing in other browsers
-// - Adblock
 // - Beta-testing
 //   - call GIBDD
 // - Release
@@ -31,69 +28,64 @@ var VALID_STRICT = 18;
 
 var YOSHKAR_OLA = 'Йошкар-Ола';
 
-var map, heatmap, markerCluster, infowindow;
+var map, heatmap, markerCluster;
+
+ymaps.ready(init);
 
 // map and its' objects initialization
-function initMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
+function init() {
+  map = new ymaps.Map('map', {
+    // Yoshkar-Ola
+    center: [56.632057, 47.882995],
     zoom: 8,
-    disableDoubleClickZoom: true,
-    center: {
-      // Yoshkar-Ola
-      lat: 56.632057,
-      lng: 47.882995
-    },
-    mapTypeId: google.maps.MapTypeId.ROADMAP
+    controls: ['typeSelector', 'zoomControl', 'rulerControl']
   });
 
-  infowindow = new google.maps.InfoWindow();
-
-  google.maps.event.addListener(map, 'zoom_changed', function() {
-    infowindow.close();
+  markerCluster = new ymaps.Clusterer({
+    preset: 'islands#blueClusterIcons',
+    clusterHideIconOnBalloonOpen: false,
+    geoObjectHideIconOnBalloonOpen: false
   });
 
-  heatmap = new google.maps.visualization.HeatmapLayer({
-    map: map
-  });
-
-  markerCluster = new MarkerClusterer(map, [], {
-    zoomOnClick: true
+  ymaps.modules.require(['Heatmap'], function(Heatmap) {
+    heatmap = new Heatmap([]);
+    heatmap.setMap(map)
   });
 }
 
 // options for layers with different types of data
 var layerOptions = [{
-  maxIntensity: 20,
+  intensityOfMidpoint: 0.15,
   condition: allPoints,
   latitude: LATITUDE,
   longitude: LONGITUDE
 }, {
-  maxIntensity: 10,
+  intensityOfMidpoint: 0.1,
   condition: republicInputData,
   latitude: LATITUDE,
   longitude: LONGITUDE
 }, {
-  maxIntensity: 20,
+  intensityOfMidpoint: 0.06,
   condition: republicGeoData,
   latitude: LATITUDE_GEOCODE,
   longitude: LONGITUDE_GEOCODE
 }, {
-  maxIntensity: 3,
+  intensityOfMidpoint: 0.1,
   condition: republicValidData,
   latitude: LATITUDE,
   longitude: LONGITUDE
 }, {
-  maxIntensity: 6,
+  intensityOfMidpoint: 0.15,
   condition: yoInputData,
   latitude: LATITUDE,
   longitude: LONGITUDE
 }, {
-  maxIntensity: 20,
+  intensityOfMidpoint: 0.06,
   condition: yoGeoData,
   latitude: LATITUDE_GEOCODE,
   longitude: LONGITUDE_GEOCODE
 }, {
-  maxIntensity: 3,
+  intensityOfMidpoint: 0.25,
   condition: yoValidData,
   latitude: LATITUDE,
   longitude: LONGITUDE
@@ -138,7 +130,7 @@ function updateMap() {
   var layerOption = layerOptions[$('select#dataSelector').val()];
 
   if ($('input[name=layer]:checked').val() == 'heatmap') {
-    markerCluster.clearMarkers();
+    markerCluster.removeAll();
     updateHeatmap(layerOption);
   } else {
     heatmap.setData([]);
@@ -148,10 +140,8 @@ function updateMap() {
 
 function updateHeatmap(heatmapOption) {
   if (heatmapOption != null) {
-    heatmap.setOptions({
-      data: generateDataArray(heatmapOption.condition, heatmapOption.latitude, heatmapOption.longitude, true),
-      maxIntensity: heatmapOption.maxIntensity
-    });
+    heatmap.options.set('intensityOfMidpoint', heatmapOption.intensityOfMidpoint);
+    heatmap.setData(generateDataArray(heatmapOption.condition, heatmapOption.latitude, heatmapOption.longitude, true));
   } else {
     heatmap.setData([]);
   }
@@ -167,7 +157,7 @@ function generateDataArray(datasetCondition, latitudeIndex, longitudeIndex, isHe
   for (var index = 0; index < data.length; ++index) {
     if (datasetCondition(data[index]) && filter(data[index], typeFilterValue, dateFilterValue, timeFilterValue, injuryFilterValue)) {
       if (isHeatmap) {
-        dataArray.push(new google.maps.LatLng(data[index][latitudeIndex], data[index][longitudeIndex]));
+        dataArray.push([data[index][latitudeIndex], data[index][longitudeIndex]]);
       } else {
         dataArray.push(createMarker(data[index], latitudeIndex, longitudeIndex));
       }
@@ -201,33 +191,30 @@ function getTimeFilterValue() {
 function drawMarkers(layerOption) {
   if (layerOption != null) {
     var markers = generateDataArray(layerOption.condition, layerOption.latitude, layerOption.longitude, false);
-    markerCluster.clearMarkers();
-    markerCluster.addMarkers(markers);
+    markerCluster.removeAll();
+    markerCluster.add(markers);
+    map.geoObjects.add(markerCluster);
   } else {
-    markerCluster.clearMarkers();
+    markerCluster.removeAll();
   }
 }
 
 function createMarker(data, latitudeIndex, longitudeIndex) {
-  var marker = new google.maps.Marker({
-    position: {
-      lat: data[latitudeIndex],
-      lng: data[longitudeIndex]
+  return new ymaps.GeoObject({
+    geometry: {
+      type: "Point",
+      coordinates: [data[latitudeIndex], data[longitudeIndex]]
     },
-    map: map
+    properties: {
+      clusterCaption: data[DATE] + ' ' + data[TIME],
+      balloonContentHeader: 'ДТП ' + data[DATE] + ' ' + data[TIME],
+      balloonContentBody: createInfoWindowContent(data)
+    }
   });
-
-  google.maps.event.addListener(marker, 'click', function(e) {
-    infowindow.setContent(createInfoWindowContent(data));
-    infowindow.open(map, this);
-  });
-
-  return marker;
 }
 
 function createInfoWindowContent(data) {
-  var content = '<div class="info"><b>Дата и время</b>: ' + data[DATE] + ' ' + data[TIME] + '<br />';
-  content += '<b>Тип</b>: ' + data[TYPE] + '<br />';
+  var content = '<div class="info"><b>Тип</b>: ' + data[TYPE] + '<br />';
 
   var place = data[LOCATION] + ', ';
   if (data[STREET] != '') {
@@ -237,6 +224,7 @@ function createInfoWindowContent(data) {
   }
 
   content += '<b>Место</b>: ' + place + '<br />';
+  content += '<b>Координаты</b>: ' + data[LATITUDE] + ', ' + data[LONGITUDE] + '<br />';
 
   if (data[DEATH] != 0) {
     content += '<b>Погибло</b>: ' + data[DEATH];

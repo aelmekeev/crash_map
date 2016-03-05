@@ -127,7 +127,7 @@ def get_percentege(part, whole):
   return '(' + percentege + '%)'
 
   
-with open('../data/input_validated.csv', encoding='utf-8', mode='r') as input:
+with open('../data/input_verified.csv', encoding='utf-8', mode='r') as input:
   # open csv files
   input = csv.reader(input, delimiter=',')
   
