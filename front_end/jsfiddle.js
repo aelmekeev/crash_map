@@ -1,6 +1,4 @@
 // TODO:
-// - Alpha-testing
-//   - testing in other browsers
 // - Beta-testing
 //   - call GIBDD
 // - Release

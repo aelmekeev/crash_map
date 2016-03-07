@@ -2,7 +2,7 @@
 
 import consts
 import csv
-import operator
+from datetime import datetime
 
 YO = 1
 
@@ -27,19 +27,31 @@ injury_children = [0, 0]
 incorrect_coordinates = [0, 0]
 incorrect_coordinates_strict = [0, 0]
 
+day_of_week = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+day_of_week_stat = [[0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0]]
+
+month = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+month_days = [31, 28, 31, 30, 31, 30, 31, 30, 30, 31, 30, 31]
+month_stat = [0] * 12
+
 type_map = {}
 adm_map = {}
 
 easy_fall = 0
 
 
+def get_day_of_week(date):
+  return datetime.strptime(date, '%d.%m.%Y').weekday()
+
+
 def analize_row(row, index):
   accidents[index] += 1
   
-  if row[consts.TYPE] in type_map:
-    type_map[row[consts.TYPE]][index] += 1
-  else:
+  day_of_week_stat[index][get_day_of_week(row[consts.DATE])] += 1
+  
+  if row[consts.TYPE] not in type_map:
     type_map[row[consts.TYPE]] = [0, 0]
+  type_map[row[consts.TYPE]][index] += 1
   
   if row[consts.STREET] != '':
     accidents_with_address[index] += 1
@@ -119,6 +131,11 @@ def print_location_statistics(index):
   print('Координат, не попадающих на территорию:', incorrect_coordinates[index], get_percentege(incorrect_coordinates[index], accidents[index]))
   print('Координат, не попадающих в окружность радиусом 150 метров вокруг указанного в данных адреса:', incorrect_coordinates_strict[index], get_percentege(incorrect_coordinates_strict[index], accidents_with_address[index]), '\n')
 
+  
+def print_day_of_week_stat(index):
+  for day in range(7):
+    print(day_of_week[day] + ':', day_of_week_stat[index][day], get_percentege(day_of_week_stat[index][day], accidents[index]))
+  
 
 def get_percentege(part, whole):
   percentege = '0'
@@ -136,16 +153,17 @@ with open('../data/input_verified.csv', encoding='utf-8', mode='r') as input:
     
     if row[consts.LOCATION] == consts.YOSHKAR_OLA:
       analize_row(row, YO)
+
+    month_stat[int(row[consts.DATE][3:5]) - 1] += 1
     
     if row[consts.TYPE] == 'Падение пассажира' and row[consts.INJURY] == '0':
       easy_fall += 1
 
     for adm in consts.ADMINISTRATIVE:
       if row[consts.LOCATION].startswith(adm):
-        if adm in adm_map:
-          adm_map[adm] += 1
-        else:
+        if adm not in adm_map:
           adm_map[adm] = 0
+        adm_map[adm] += 1
       
 
 print('Республика Марий Эл:\n')
@@ -160,4 +178,15 @@ print('\n\nг. Йошкар-Ола:\n')
 print_location_statistics(YO)
 
 print('\n\nПрочее:\n')
-print('Количество ДТП типа "Падение пассажира" без пострадавших:', easy_fall, get_percentege(easy_fall, type_map['Падение пассажира'][0]), '\n')
+
+print('\nСтатистика ДТП по дням недели:\n')
+print('Республика Марий Эл:\n')
+print_day_of_week_stat(0)
+print('\n\nг. Йошкар-Ола:\n')
+print_day_of_week_stat(YO)
+
+print('\nСтатистика ДТП по месяцам:\n')
+for month_index in range(12):
+  print(month[month_index] + ':', round(month_stat[month_index] / month_days[month_index], 2))
+  
+print('\nКоличество ДТП типа "Падение пассажира" без пострадавших:', easy_fall, get_percentege(easy_fall, type_map['Падение пассажира'][0]), '\n')
