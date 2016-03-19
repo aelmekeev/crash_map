@@ -108,7 +108,7 @@ with open('../data/input_geocoded.csv', encoding='utf-8', mode='r') as input, op
       else:
         row.append(1)        
     
-    if is_distance_valid(row):
+    if row[-1] == 1 and is_distance_valid(row):
       row.append(1)
     else:
       row.append(0)

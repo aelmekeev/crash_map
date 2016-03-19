@@ -1,9 +1,4 @@
-// TODO:
-// - Beta-testing
-//   - call GIBDD
-// - Release
-
-// indeces for input data array
+// indices for input data array
 var DATE = 0;
 var TIME = 1;
 var TYPE = 2;
