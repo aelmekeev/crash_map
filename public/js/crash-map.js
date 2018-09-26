@@ -42,9 +42,9 @@ function init() {
         geoObjectHideIconOnBalloonOpen: false
     });
 
-    ymaps.modules.require(['  Heatmap'], function (Heatmap) {
-        heatmap = new Heatmap([]);
-        heatmap.setMap(map)
+    ymaps.modules.require(['Heatmap'], function (Heatmap) {
+        heatmap = new Heatmap();
+        heatmap.setMap(map);
     });
 }
 
