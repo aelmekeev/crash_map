@@ -50,7 +50,7 @@ function init() {
 }
 
 // options for layers with different types of data
-const layerOptions = [{
+const LAYER_OPTIONS = [{
     intensityOfMidpoint: 0.15,
     condition: allPoints,
     latitude: LATITUDE,
@@ -123,7 +123,7 @@ function resetType() {
 }
 
 function updateMap() {
-    const layerOption = layerOptions[$('select#dataSelector').val()];
+    const layerOption = LAYER_OPTIONS[$('select#dataSelector').val()];
 
     if ($('input[name=layer]:checked').val() === 'heatmap') {
         markerCluster.removeAll();
