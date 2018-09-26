@@ -179,10 +179,10 @@ function getTimeFilterValue() {
     timeFilterValue.endTime = endTime.timepicker('getTime');
     timeFilterValue.invert = invertTimeRange.prop('checked');
     if (timeFilterValue.startTime) {
-        timeFilterValue.startTime.setFullYear(DATA_YEAR);
+        timeFilterValue.startTime.setFullYear(DATA_YEAR, 0, 1);
     }
     if (timeFilterValue.endTime) {
-        timeFilterValue.endTime.setFullYear(DATA_YEAR);
+        timeFilterValue.endTime.setFullYear(DATA_YEAR, 0, 1);
     }
 
     return timeFilterValue;
@@ -300,19 +300,19 @@ function parseDate(dateString) {
 
 function parseTime(timeString) {
     const parts = timeString.split(':');
-    return new Date(1970, 1 - 1, 1, +parts[0], +parts[1]);
+    return new Date(DATA_YEAR, 0, 1, +parts[0], +parts[1]);
 }
 
 function resetDate() {
     startDate.val('');
     startDate.datepicker('option', {
-        minDate: new Date(2015, 1 - 1, 1),
-        maxDate: new Date(2015, 12 - 1, 31)
+        minDate: new Date(DATA_YEAR, 0, 1),
+        maxDate: new Date(DATA_YEAR, 11, 31)
     });
     endDate.val('');
     endDate.datepicker('option', {
-        minDate: new Date(2015, 1 - 1, 1),
-        maxDate: new Date(2015, 12 - 1, 31)
+        minDate: new Date(DATA_YEAR, 0, 1),
+        maxDate: new Date(DATA_YEAR, 11, 31)
     });
     invertDateRange.removeAttr('checked');
     updateMap();
@@ -345,8 +345,8 @@ $(function () {
     injuryFilter = $('select#injuryFilter');
 
     startDate.datepicker({
-        minDate: new Date(2015, 1 - 1, 1),
-        maxDate: new Date(2015, 12 - 1, 31),
+        minDate: new Date(DATA_YEAR, 0, 1),
+        maxDate: new Date(DATA_YEAR, 11, 31),
         dateFormat: 'd/m/y',
         onClose: function (selectedDate) {
             endDate.datepicker('option', 'minDate', selectedDate);
@@ -354,8 +354,8 @@ $(function () {
     });
 
     endDate.datepicker({
-        minDate: new Date(2015, 1 - 1, 1),
-        maxDate: new Date(2015, 12 - 1, 31),
+        minDate: new Date(DATA_YEAR, 0, 1),
+        maxDate: new Date(DATA_YEAR, 11, 31),
         dateFormat: 'd/m/y',
         onClose: function (selectedDate) {
             startDate.datepicker('option', 'maxDate', selectedDate);
