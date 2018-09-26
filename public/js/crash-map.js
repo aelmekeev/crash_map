@@ -20,6 +20,7 @@ const VALID = 17;
 const VALID_STRICT = 18;
 
 const YOSHKAR_OLA = 'Йошкар-Ола';
+const DATA_YEAR = 2015;
 
 let map, heatmap, markerCluster;
 // widgets
@@ -175,7 +176,9 @@ function getTimeFilterValue() {
     let timeFilterValue = [];
 
     timeFilterValue.startTime = startTime.timepicker('getTime');
+    timeFilterValue.startTime.setFullYear(DATA_YEAR);
     timeFilterValue.endTime = endTime.timepicker('getTime');
+    timeFilterValue.endTime.setFullYear(DATA_YEAR);
     timeFilterValue.invert = invertTimeRange.prop('checked');
 
     return timeFilterValue;
