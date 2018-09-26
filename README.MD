@@ -4,7 +4,7 @@ This project contains back-end and front-end code written for visualization of c
 
 ## Usage
 
-There are two parts of this project: back-end and front-end. Back-end is written on Python and front-end is non Javascript. Also there is an `data.csv` file which was created from data provided by GIBDD of Mari El Republic and contains information about road accidents in Mari El Republic in 2015.
+There are two parts of this project: back-end and front-end. Back-end is written on Python and front-end is on Javascript. Also there is an `data.csv` file which was created from data provided by GIBDD of Mari El Republic and contains information about road accidents in Mari El Republic in 2015.
 
 ### Back-end
 
