@@ -24,7 +24,7 @@ const DATA_YEAR = 2015;
 
 let map, heatmap, markerCluster;
 // widgets
-let startDate, endDate, startTime, endTime, invertDateRange, invertTimeRange, typesFilter, injuryFilter;
+let startDate, endDate, startTime, endTime, invertDateRange, invertTimeRange, injuryFilter;
 
 ymaps.ready(init);
 
@@ -118,7 +118,7 @@ function yoValidData(data) {
 }
 
 function resetType() {
-    typesFilter.removeAttr('selected');
+    $('select#typesFilter :selected').removeAttr('selected');
     updateMap();
 }
 
@@ -144,7 +144,7 @@ function updateHeatmap(heatmapOption) {
 }
 
 function generateDataArray(datasetCondition, latitudeIndex, longitudeIndex, isHeatmap) {
-    const typeFilterValue = typesFilter.text();
+    const typeFilterValue = $('select#typesFilter :selected').text();
     const dateFilterValue = getDateFilterValue();
     const timeFilterValue = getTimeFilterValue();
     const injuryFilterValue = injuryFilter.val();
@@ -341,7 +341,6 @@ $(function () {
     endTime = $('#endTime');
     invertDateRange = $('#invertDateRange');
     invertTimeRange = $('#invertTimeRange');
-    typesFilter = $('select#typesFilter :selected');
     injuryFilter = $('select#injuryFilter');
 
     startDate.datepicker({
