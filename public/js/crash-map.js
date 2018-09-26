@@ -176,10 +176,14 @@ function getTimeFilterValue() {
     let timeFilterValue = [];
 
     timeFilterValue.startTime = startTime.timepicker('getTime');
-    timeFilterValue.startTime.setFullYear(DATA_YEAR);
     timeFilterValue.endTime = endTime.timepicker('getTime');
-    timeFilterValue.endTime.setFullYear(DATA_YEAR);
     timeFilterValue.invert = invertTimeRange.prop('checked');
+    if (timeFilterValue.startTime) {
+        timeFilterValue.startTime.setFullYear(DATA_YEAR);
+    }
+    if (timeFilterValue.endTime) {
+        timeFilterValue.endTime.setFullYear(DATA_YEAR);
+    }
 
     return timeFilterValue;
 }
